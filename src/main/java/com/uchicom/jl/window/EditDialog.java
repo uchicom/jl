@@ -1,14 +1,15 @@
 // (c) 2017 uchicom
-package com.uchicom.jl;
+package com.uchicom.jl.window;
 
 import javax.swing.JDialog;
 
 /**
+ * コマンド、環境変数の登録を可能にする
  * @author uchicom: Shigeki Uchiyama
  *
  */
-public class InstallDialog extends JDialog {
-	public InstallDialog() {
+public class EditDialog extends JDialog {
+	public EditDialog() {
 		initComponents();
 	}
 

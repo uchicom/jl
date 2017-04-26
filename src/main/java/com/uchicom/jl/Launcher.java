@@ -61,61 +61,34 @@ public class Launcher {
 
 	public PopupMenu createPopupMenu() {
 		PopupMenu popupMenu = new PopupMenu();
-		createMenu(popupMenu, "root");
+		createMenu(popupMenu, "popup");
 		return popupMenu;
 	}
 	public Menu createMenu(Menu menu, String key) {
 		String menuKeys = config.getProperty(key);
 		if (menuKeys == null) return menu;
 		for (String menuKey : menuKeys.split(",")) {
-			String nextKey = config.getProperty(menuKey);
+			String cKey = key + "." + menuKey;
+			String nextKey = config.getProperty(cKey);
 			if ("[-]".equals(menuKey)) {
 				menu.addSeparator();
-			} else if ("[exit]".equals(menuKey)) {
+			} else if ("[e]".equals(menuKey)) {
 				MenuItem menuItem = new MenuItem("終了");
 				menuItem.addActionListener(new ExitListener(this));
 				menu.add(menuItem);
 			} else if (nextKey != null) {
 				//メニュー
-				menu.add(createMenu(new Menu("abcd"), menuKey));
+				menu.add(createMenu(new Menu("abcd"), cKey));
 			} else {
-				String name = config.getProperty(menuKey + ".NAME");
-				String commands = config.getProperty(menuKey + ".COMMAND");
+				String name = config.getProperty(cKey + ".NAME");
+				String commands = config.getProperty(cKey + ".COMMAND");
 				MenuItem menuItem = new MenuItem(name);
-				if (commands != null) {
+				if (commands != null && !"".equals(commands)) {
 					menuItem.addActionListener(new ProcessActionListener(commands.split("\\|")));
 				}
 				menu.add(menuItem);
 			}
 		}
-//		PopupMenu popup = new PopupMenu();
-//
-//		Menu menu = new Menu("editor");
-//		popup.add(menu);
-//		MenuItem menuItem = new MenuItem("rssr");
-//		menuItem.addActionListener((e) -> {
-//			RssrFrame frame = new RssrFrame(
-//					new File("C:\\Users\\shigeki\\Dropbox\\uchicom\\software\\rssr\\conf\\rssr.properties"));
-//			frame.setVisible(true);
-//		});
-//		menu.add(menuItem);
-//		menuItem = new MenuItem("まずこれ!");
-//		menuItem.addActionListener(new ProcessActionListener("C:\\Program Files\\TeraPad\\TeraPad.exe",
-//				"C:\\Users\\shigeki\\Dropbox\\uchicom\\まずこれを開け！！.txt"));
-//		menu.add(menuItem);
-//		menu = new Menu("設定");
-//		menuItem = new MenuItem("インストール");
-//		menuItem.addActionListener((e) -> {
-//			InstallDialog dialog = new InstallDialog();
-//			dialog.setModal(true);
-//			dialog.setVisible(true);
-//		});
-//		menu.add(menuItem);
-//		popup.add(menu);
-//		popup.addSeparator();
-//		menuItem = new MenuItem("終了");
-//		menuItem.addActionListener(new ExitListener(this));
-//		popup.add(menuItem);
 		return menu;
 	}
 
@@ -167,5 +140,11 @@ public class Launcher {
 		if (SystemTray.isSupported()) {
 			tray.remove(trayIcon);
 		}
+	}
+	/**
+	 * 編集.
+	 */
+	public void edit() {
+
 	}
 }
