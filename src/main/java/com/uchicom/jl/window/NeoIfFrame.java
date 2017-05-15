@@ -3,16 +3,19 @@ package com.uchicom.jl.window;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Polygon;
+import java.awt.MenuItem;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 import javax.swing.JFrame;
+
+import com.uchicom.jl.PolygonMenuItem;
+import com.uchicom.jl.action.JarActionListener;
 
 /**
  * @author uchicom: Shigeki Uchiyama
@@ -20,8 +23,10 @@ import javax.swing.JFrame;
  */
 public class NeoIfFrame extends JFrame {
 
-	public NeoIfFrame(GraphicsConfiguration gc) {
-		super(gc);
+	private Properties config;
+	private List<PolygonMenuItem> polygonMenuItemList = new ArrayList<>();
+	public NeoIfFrame(Properties config) {
+		this.config = config;
 		initComponents();
 	}
 
@@ -31,7 +36,7 @@ public class NeoIfFrame extends JFrame {
 	private void initComponents() {
 		//		setContentPane(new ButtonPanel());
 //		this.setLocation(800, 200);
-
+		initMenu();
 		setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
 		setUndecorated(true);//タイトルが消える　ボタンで消すようにする？
 
@@ -44,33 +49,29 @@ public class NeoIfFrame extends JFrame {
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				System.out.println(e);
-//				if (light) {
-//					flags[++index] = 1;
-//				} else {
-//					flags[--index] = 0;
-//				}
-//				if (index % 10 == 0) {
-//					if (light) {
-//						light = false;
-//					} else {
-//						light = true;
-//					}
-//				}
-//				repaint();
+				for (PolygonMenuItem polygonMenuItem : polygonMenuItemList) {
+					polygonMenuItem.setOnMouse(polygonMenuItem.contains(e.getX(), e.getY()));
+				}
+				repaint();
 			}
-
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				System.out.println(e);
+				for (PolygonMenuItem polygonMenuItem : polygonMenuItemList) {
+					polygonMenuItem.setOnMouse(false);
+				}
+				repaint();
 			}
 
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				System.out.println(e);
-//				System.exit(0);
+				for (PolygonMenuItem polygonMenuItem : polygonMenuItemList) {
+					if (polygonMenuItem.contains(e.getX(), e.getY())) {
+						polygonMenuItem.getActionListener().actionPerformed(null);
+						break;
+					}
+				}
 			}
 
 		});
@@ -78,37 +79,66 @@ public class NeoIfFrame extends JFrame {
 
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				System.out.println(e);
+//				System.out.println(e);
 
 			}
 
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				System.out.println(e);
-				System.out.println(e);
-				if (light) {
-					flags[++index] = 1;
-				} else {
-					flags[--index] = 0;
-				}
-				if (index % 10 == 0) {
-					if (light) {
-						light = false;
+				boolean changed = false;
+				for (PolygonMenuItem polygonMenuItem : polygonMenuItemList) {
+					if (polygonMenuItem.contains(e.getX(), e.getY())) {
+						if (!polygonMenuItem.isOnMouse()) {
+							polygonMenuItem.setOnMouse(true);
+							changed = true;
+						}
 					} else {
-						light = true;
+						if (polygonMenuItem.isOnMouse()) {
+							polygonMenuItem.setOnMouse(false);
+							changed = true;
+						}
 					}
 				}
-				repaint();
-
+				if (changed) {
+					repaint();
+				}
 			}
 
 		});
 		flags[0] = 1;
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice device = ge.getDefaultScreenDevice();
-		GraphicsConfiguration gc = device.getDefaultConfiguration();
+//		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+//		GraphicsDevice device = ge.getDefaultScreenDevice();
+//		GraphicsConfiguration gc = device.getDefaultConfiguration();
 //		device.setFullScreenWindow(this);
 		pack();
+	}
+
+	private void initMenu() {
+		int offsetX = 100;
+		int offsetY = 100;
+		int r = 30;
+		String[] menu = config.getProperty("hex").split(",");
+		for (int i = 0; i < menu.length; i++) {
+			try {
+				PolygonMenuItem polygon = new PolygonMenuItem(
+					new int[] { offsetX + r, offsetX + (r/2), offsetX + -(r/2), offsetX + -r, offsetX + -(r/2), offsetX + (r/2) },
+					new int[] { offsetY + 0, offsetY + (r/2), offsetY + (r/2), offsetY + 0, offsetY-(r/2), offsetY -(r/2)},
+					6,
+					config.getProperty(menu[i] + ".NAME"),
+					offsetX - (r/2),
+					offsetY + (r/4),
+					new Color(255, 0, 0, 200),
+					new Color(255, 0, 0, 100),
+					new JarActionListener(config.getProperty(menu[i] + ".JAR"),
+							config.getProperty(menu[i] + ".MAIN"))
+				);
+				offsetX += r + r/2 + 2;
+				offsetY += r/2 + 2;
+				polygonMenuItemList.add(polygon);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	boolean light = true;
 	int index = 0;
@@ -117,24 +147,41 @@ public class NeoIfFrame extends JFrame {
 	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
-		int offsetX = 100;
-		int offsetY = 100;
-		int r = 20;
 //		g.setFont(getFont().deriveFont(36));
-		for (int i = 0; i < flags.length; i++) {
-			int flag = flags[i];
-			if (flag == 1) {
-				g.setColor(new Color(255, 0, 0, 100));
-				g.fillPolygon(new Polygon(
-						new int[] { offsetX + r, offsetX + (r/2), offsetX + -(r/2), offsetX + -r, offsetX + -(r/2), offsetX + (r/2) },
-						new int[] { offsetY + 0, offsetY + (int)(r * Math.cos(60)), offsetY + (int)(r * Math.cos(60)), offsetY + 0, offsetY + -(int)(r * Math.cos(60)), offsetY + -(int)(r * Math.cos(60)) },
-						6));
-				g.setColor(Color.WHITE);
-				g.drawString(String.valueOf(i), offsetX - (r/2), offsetY + (r/2));
-			}
-			offsetX += r + r/2 + 2;
-			offsetY += (int)(r * -Math.sin(30)) + 2;
+		for (PolygonMenuItem polygon : polygonMenuItemList) {
+			g.setColor(polygon.getColor());
+			g.fillPolygon(polygon);
+			g.setColor(Color.WHITE);
+			g.drawString(polygon.getName(), polygon.getX(), polygon.getY());
 		}
 
+	}
+	private MenuItem[][][] matrix = new MenuItem[10][10][2];
+	/**
+	 * 配列の座標を計算し、マトリックスに格納済みのメニューを返却する。
+	 *
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public MenuItem getMenuItem(int pointX, int pointY) {
+		int y = pointY / 10;
+		int x = pointX / 10;
+		int z = 0;
+		boolean judge = (y + x) % 2 == 0;
+		if (judge) {
+			if (x % 10 + y % 10 < 10) {
+				z = 0;
+			} else {
+				z = 1;
+			}
+		} else {
+			if (x % 10 < y % 10) {
+				z = 0;
+			} else {
+				z = 1;
+			}
+		}
+		return matrix[y][x][z];
 	}
 }

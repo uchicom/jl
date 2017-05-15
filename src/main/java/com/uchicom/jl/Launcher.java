@@ -3,6 +3,7 @@
 package com.uchicom.jl;
 
 import java.awt.AWTException;
+import java.awt.CheckboxMenuItem;
 import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
@@ -14,12 +15,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.Permission;
 import java.util.Properties;
 
 import javax.imageio.ImageIO;
 
 import com.uchicom.jl.action.ExitListener;
+import com.uchicom.jl.action.MenuDisplayListener;
 import com.uchicom.jl.action.ProcessActionListener;
+import com.uchicom.jl.window.NeoIfFrame;
 
 /**
  * 起動コマンドとパスなどを登録しておく ActionListenerを自作するか、MainArgsで指定するか、main
@@ -29,12 +33,21 @@ import com.uchicom.jl.action.ProcessActionListener;
  */
 public class Launcher {
 
-	private File configFile = new File("config/jl.properties");
+    /** plateの状態 */
+    private int launcherStatus;
+	private File configFile = new File("conf/jl.properties");
 	private Properties config = new Properties();
 	private TrayIcon trayIcon;
+	private NeoIfFrame menuFrame;
+	private CheckboxMenuItem checkboxMenuItem = new CheckboxMenuItem("表示");
 
+	public Launcher() {
+		// セキュリティーマネージャーの設定
+		setSecurity();
+	}
 	public void execute() {
 		initProperties();
+		menuFrame = new NeoIfFrame(config);
 		SystemTray tray = SystemTray.getSystemTray();
 		if (SystemTray.isSupported()) {
 
@@ -61,7 +74,13 @@ public class Launcher {
 
 	public PopupMenu createPopupMenu() {
 		PopupMenu popupMenu = new PopupMenu();
-		createMenu(popupMenu, "popup");
+		checkboxMenuItem.addItemListener(new MenuDisplayListener(this));
+		popupMenu.add(checkboxMenuItem);
+		popupMenu.addSeparator();
+		MenuItem item = new MenuItem("終了");
+		item.addActionListener(new ExitListener(this));
+		popupMenu.add(item);
+		//createMenu(popupMenu, "popup");
 		return popupMenu;
 	}
 	public Menu createMenu(Menu menu, String key) {
@@ -136,15 +155,57 @@ public class Launcher {
 	 */
 	public void exit() {
 		storeProperties();
+		if (menuFrame != null) {
+			menuFrame.dispose();
+		}
 		SystemTray tray = SystemTray.getSystemTray();
 		if (SystemTray.isSupported()) {
 			tray.remove(trayIcon);
 		}
+		exit(0);
 	}
+
 	/**
 	 * 編集.
 	 */
 	public void edit() {
 
 	}
+
+	public void display(boolean selected) {
+		menuFrame.setVisible(selected);
+	}
+
+	/**
+	 * セキュリティマネージャーでexitをSecurityExceptionにする。
+	 */
+	protected void setSecurity() {
+		System.setSecurityManager(new SecurityManager() {
+			/**
+			 *
+			 */
+			public void checkPermission(Permission perm) {
+				if ("setSecurityManager".equals(perm.getName())) {
+					throw new SecurityException("setSecurityManager is no permission.");
+				}
+			}
+
+			/**
+			 *
+			 */
+			public void checkExit(int status) {
+				if (launcherStatus == 0) {
+					throw new SecurityException("exit is no permission.");
+				}
+			}
+		});
+	}
+
+    /**
+     * サーバーを終了する。
+     */
+    public void exit(int status) {
+    	launcherStatus = 1;
+        System.exit(status);
+    }
 }
