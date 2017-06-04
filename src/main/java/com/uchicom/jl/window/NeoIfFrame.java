@@ -114,8 +114,8 @@ public class NeoIfFrame extends JFrame {
 	}
 
 	private void initMenu() {
-		int offsetX = 100;
-		int offsetY = 100;
+		int offsetX = 50;
+		int offsetY = 20;
 		int r = 30;
 		String[] menu = config.getProperty("hex").split(",");
 		for (int i = 0; i < menu.length; i++) {
@@ -133,7 +133,11 @@ public class NeoIfFrame extends JFrame {
 							config.getProperty(menu[i] + ".MAIN"))
 				);
 				offsetX += r + r/2 + 2;
-				offsetY += r/2 + 2;
+				if (i % 2 == 0) {
+					offsetY += r/2 + 2;
+				} else {
+					offsetY -= r/2 + 2;
+				}
 				polygonMenuItemList.add(polygon);
 			} catch (Exception e) {
 				e.printStackTrace();
