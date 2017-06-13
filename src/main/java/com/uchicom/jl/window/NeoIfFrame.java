@@ -65,11 +65,13 @@ public class NeoIfFrame extends JFrame {
 
 
 			@Override
-			public void mouseClicked(MouseEvent e) {
-				for (PolygonMenuItem polygonMenuItem : polygonMenuItemList) {
-					if (polygonMenuItem.contains(e.getX(), e.getY())) {
-						polygonMenuItem.getActionListener().actionPerformed(null);
-						break;
+			public void mousePressed(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					for (PolygonMenuItem polygonMenuItem : polygonMenuItemList) {
+						if (polygonMenuItem.contains(e.getX(), e.getY())) {
+							polygonMenuItem.getActionListener().actionPerformed(null);
+							break;
+						}
 					}
 				}
 			}
