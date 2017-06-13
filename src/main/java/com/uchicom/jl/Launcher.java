@@ -75,6 +75,9 @@ public class Launcher {
 	public PopupMenu createPopupMenu() {
 		PopupMenu popupMenu = new PopupMenu();
 		checkboxMenuItem.addItemListener(new MenuDisplayListener(this));
+		//初回表示
+		checkboxMenuItem.setState(true);
+		display(true);
 		popupMenu.add(checkboxMenuItem);
 		popupMenu.addSeparator();
 		MenuItem item = new MenuItem("終了");
