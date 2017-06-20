@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
  */
 public class PolygonMenuItem extends Polygon {
 
+	private boolean root;
 	private String name;
 	private boolean onMouse;
 	private Color onColor;
@@ -19,7 +20,7 @@ public class PolygonMenuItem extends Polygon {
 	private int y;
 	private ActionListener actionListener;
 	public PolygonMenuItem(int[] arg0, int[] arg1, int arg2,
-			String name, int x, int y, Color onColor, Color offColor, ActionListener actionListener) {
+			String name, int x, int y, Color onColor, Color offColor, ActionListener actionListener, boolean root) {
 		super(arg0, arg1, arg2);
 		this.name = name;
 		this.x = x;
@@ -27,6 +28,7 @@ public class PolygonMenuItem extends Polygon {
 		this.onColor = onColor;
 		this.offColor = offColor;
 		this.actionListener = actionListener;
+		this.root = root;
 	}
 	public String getName() {
 		return name;
@@ -60,5 +62,11 @@ public class PolygonMenuItem extends Polygon {
 	}
 	public void setActionListener(ActionListener actionListener) {
 		this.actionListener = actionListener;
+	}
+	public boolean isRoot() {
+		return root;
+	}
+	public void setRoot(boolean root) {
+		this.root = root;
 	}
 }

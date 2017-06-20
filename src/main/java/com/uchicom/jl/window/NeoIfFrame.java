@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.MenuItem;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -24,6 +26,7 @@ import com.uchicom.jl.action.JarActionListener;
 public class NeoIfFrame extends JFrame {
 
 	private Properties config;
+	private boolean open;
 	private List<PolygonMenuItem> polygonMenuItemList = new ArrayList<>();
 	public NeoIfFrame(Properties config) {
 		this.config = config;
@@ -36,6 +39,29 @@ public class NeoIfFrame extends JFrame {
 	private void initComponents() {
 		//		setContentPane(new ButtonPanel());
 //		this.setLocation(800, 200);
+
+		polygonMenuItemList.add(new PolygonMenuItem(
+				new int[] {0, 0, 30},
+				new int[] {0, 30, 0},
+				3,
+				"JL",
+				0,
+				15,
+				new Color(255, 0, 0, 200),
+				new Color(255, 0, 0, 100),
+				new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						if (open) {
+							open = false;
+						} else {
+							open = true;
+						}
+						repaint();
+					}
+				},
+				true));
 		initMenu();
 		setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
 		setUndecorated(true);//タイトルが消える　ボタンで消すようにする？
@@ -65,11 +91,13 @@ public class NeoIfFrame extends JFrame {
 
 
 			@Override
-			public void mouseClicked(MouseEvent e) {
-				for (PolygonMenuItem polygonMenuItem : polygonMenuItemList) {
-					if (polygonMenuItem.contains(e.getX(), e.getY())) {
-						polygonMenuItem.getActionListener().actionPerformed(null);
-						break;
+			public void mousePressed(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					for (PolygonMenuItem polygonMenuItem : polygonMenuItemList) {
+						if (polygonMenuItem.contains(e.getX(), e.getY())) {
+							polygonMenuItem.getActionListener().actionPerformed(null);
+							break;
+						}
 					}
 				}
 			}
@@ -117,6 +145,8 @@ public class NeoIfFrame extends JFrame {
 		int offsetX = 50;
 		int offsetY = 20;
 		int r = 30;
+
+
 		String[] menu = config.getProperty("hex").split(",");
 		for (int i = 0; i < menu.length; i++) {
 			try {
@@ -130,7 +160,8 @@ public class NeoIfFrame extends JFrame {
 					new Color(255, 0, 0, 200),
 					new Color(255, 0, 0, 100),
 					new JarActionListener(config.getProperty(menu[i] + ".JAR"),
-							config.getProperty(menu[i] + ".MAIN"))
+							config.getProperty(menu[i] + ".MAIN")),
+					false
 				);
 				offsetX += r + r/2 + 2;
 				if (i % 2 == 0) {
@@ -152,7 +183,9 @@ public class NeoIfFrame extends JFrame {
 	public void paint(Graphics g) {
 		super.paint(g);
 //		g.setFont(getFont().deriveFont(36));
+
 		for (PolygonMenuItem polygon : polygonMenuItemList) {
+			if (!open && !polygon.isRoot()) continue;
 			g.setColor(polygon.getColor());
 			g.fillPolygon(polygon);
 			g.setColor(Color.WHITE);
