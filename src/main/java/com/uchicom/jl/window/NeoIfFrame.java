@@ -3,6 +3,7 @@ package com.uchicom.jl.window;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.MenuItem;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -189,7 +190,13 @@ public class NeoIfFrame extends JFrame {
 			g.setColor(polygon.getColor());
 			g.fillPolygon(polygon);
 			g.setColor(Color.WHITE);
-			g.drawString(polygon.getName(), polygon.getX(), polygon.getY());
+			if (polygon.isRoot()) {
+				((Graphics2D)g).rotate(Math.toRadians(-45), 5, 5);
+				g.drawString(polygon.getName(), polygon.getX(), polygon.getY());
+				((Graphics2D)g).rotate(Math.toRadians(45), 0, 0);
+			} else {
+				g.drawString(polygon.getName(), polygon.getX(), polygon.getY());
+			}
 		}
 
 	}
