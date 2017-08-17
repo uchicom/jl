@@ -17,6 +17,7 @@ import java.util.Properties;
 
 import javax.swing.JFrame;
 
+import com.uchicom.jl.Constants;
 import com.uchicom.jl.PolygonMenuItem;
 import com.uchicom.jl.action.JarActionListener;
 
@@ -58,6 +59,19 @@ public class NeoIfFrame extends JFrame {
 							open = false;
 						} else {
 							open = true;
+							Thread thread = new Thread() {
+								public void run() {
+									try {
+										Thread.sleep(Constants.AUTO_HIDE_TIME);
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
+									open = false;
+									repaint();
+								}
+							};
+							thread.setDaemon(true);
+							thread.start();
 						}
 						repaint();
 					}
