@@ -27,9 +27,15 @@ import com.uchicom.jl.action.JarActionListener;
  */
 public class NeoIfFrame extends JFrame {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private Properties config;
 	private boolean open;
 	private List<PolygonMenuItem> polygonMenuItemList = new ArrayList<>();
+	private long start;
+	private boolean entered;
 	public NeoIfFrame(Properties config) {
 		this.config = config;
 		initComponents();
@@ -61,10 +67,17 @@ public class NeoIfFrame extends JFrame {
 							open = true;
 							Thread thread = new Thread() {
 								public void run() {
-									try {
-										Thread.sleep(Constants.AUTO_HIDE_TIME);
-									} catch (InterruptedException e) {
-										e.printStackTrace();
+									start = System.currentTimeMillis();
+									while (entered || (System.currentTimeMillis() - start) < Constants.AUTO_HIDE_TIME) { 
+										long time = Constants.AUTO_HIDE_TIME - (System.currentTimeMillis() - start);
+										if (time < 1) {
+											time = 1;
+										}
+										try {
+											Thread.sleep(time);
+										} catch (InterruptedException e) {
+											e.printStackTrace();
+										}
 									}
 									open = false;
 									repaint();
@@ -94,6 +107,8 @@ public class NeoIfFrame extends JFrame {
 					polygonMenuItem.setOnMouse(polygonMenuItem.contains(e.getX(), e.getY()));
 				}
 				repaint();
+				start = System.currentTimeMillis();
+				entered = true;
 			}
 
 			@Override
@@ -102,6 +117,8 @@ public class NeoIfFrame extends JFrame {
 					polygonMenuItem.setOnMouse(false);
 				}
 				repaint();
+				start = System.currentTimeMillis();
+				entered = false;
 			}
 
 
